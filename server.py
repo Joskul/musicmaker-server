@@ -34,15 +34,16 @@ def upload_file():
         # Generate a unique filename
         unique_filename = str(uuid.uuid4()) + '.' + \
             file.filename.rsplit('.', 1)[1].lower()
+        user_id = request.args.get('user_id')
 
         # Save the file to the upload folder
         file_path = os.path.join(
             app.root_path, app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(file_path)
 
-        # Store the file information in the session for the current user
-        session['latest_file'] = {
-            'file_path': file_path, 'file_name': unique_filename}
+        # Update user-specific file information
+        user_files[user_id] = {'file_path': file_path,
+                               'file_name': unique_filename}
 
         # Return the unique identifier associated with the uploaded file
         return jsonify({'file_id': unique_filename})
