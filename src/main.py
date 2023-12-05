@@ -38,8 +38,7 @@ def allowed_file(filename):
     '''Check for allowed file type'''
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-@app.post("/upload")
+@app.post("/process-file/")
 async def upload_file(file: UploadFile, user_id: str):
     '''Receive files'''
     if not file:
@@ -66,14 +65,14 @@ async def upload_file(file: UploadFile, user_id: str):
     return JSONResponse(content={'error': 'Invalid file type'}, status_code=400)
 
 
-@app.post("/process_url")
-async def download_audio(data: dict):
+@app.post("/process-url/")
+async def download_audio(data: dict, user_id: str):
+    print(data)
     '''Get audio URL'''
-    if 'videoId' not in data or 'userId' not in data or 'format' not in data:
+    if 'video_id' not in data or 'format' not in data:
         return JSONResponse(content={'error': 'Invalid request'}, status_code=400)
 
-    video_id = data['videoId']
-    user_id = data['userId']
+    video_id = data['video_id']
     request_format = data['format']
 
     if (request_format == 'youtube'):
@@ -102,7 +101,7 @@ async def download_audio(data: dict):
             return JSONResponse(content={'error': str(e)}, status_code=500)
 
 
-@app.get("/get_file/{user_id}")
+@app.get("/audio-file/{user_id}")
 async def return_user_file(user_id: str):
     '''Send the file requested'''
     if user_id in user_files:
