@@ -6,6 +6,11 @@ from starlette.middleware.cors import CORSMiddleware
 
 from pytube import YouTube
 
+import sys
+import librosa
+
+from sound_to_midi.monophonic import wave_to_midi
+
 app = FastAPI()
 origins = ["*"]
 
@@ -19,6 +24,7 @@ app.add_middleware(
 
 PROCESS_FOLDER = 'processes'
 AUDIO_FILE_NAME = 'audio.mp3'
+MIDI_FILE_NAME = 'midi.mid'
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'ogg', 'flac'}
 
 # Store user-specific process information
@@ -148,6 +154,24 @@ async def return_user_file(user_id: str):
     else:
         return JSONResponse(content={'error': 'User has no uploaded files'}, status_code=404)
 
+@app.get("/midi-file/{user_id}")
+async def convert_audio_to_midi(user_id: str):
+    '''Send the file requested'''
+    if user_id in user_files:
+        file_info = user_files[user_id]
+        file_in = os.path.join(PROCESS_FOLDER, file_info['process_id'], AUDIO_FILE_NAME)
+        file_out = os.path.join(PROCESS_FOLDER, file_info['process_id'], MIDI_FILE_NAME)
+        y, sr = librosa.load(file_in, sr=None)
+        print("Converting...", sr)
+        midi = wave_to_midi(y, srate=int(sr)) # TODO: Improve MIDI conversion
+        print("Done converting!")
+        with open (file_out, 'wb') as f:
+            midi.writeFile(f)
+        return FileResponse(path=os.path.join(PROCESS_FOLDER, file_info['process_id'], MIDI_FILE_NAME),
+                            filename=MIDI_FILE_NAME, media_type='application/octet-stream')
+    else:
+        return JSONResponse(content={'error': 'User has no uploaded files'}, status_code=404)
+
 # TODO: Add more audio processing
 
 if __name__ == '__main__':
@@ -155,5 +179,5 @@ if __name__ == '__main__':
         os.makedirs(PROCESS_FOLDER)
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=5000,
+    uvicorn.run("main:app", host="127.0.0.1", port=5000,
                 log_level="info", reload=True)
