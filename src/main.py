@@ -3,6 +3,7 @@ import uuid
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from starlette.middleware.cors import CORSMiddleware
+
 from pytube import YouTube
 
 app = FastAPI()
@@ -23,6 +24,51 @@ ALLOWED_EXTENSIONS = {'mp3', 'wav', 'ogg', 'flac'}
 # Store user-specific process information
 user_files = {}
 
+def save_youtube_audio(user_id: str, video_id: str):
+    try:
+            # Download the YouTube video audio
+            youtube_url = f'https://www.youtube.com/watch?v={video_id}'
+            yt = YouTube(youtube_url)
+            audio_stream = yt.streams.filter(only_audio=True).first()
+            # Generate a unique filename
+            unique_id = str(uuid.uuid4())
+
+            audio_path = os.path.join(
+                PROCESS_FOLDER, unique_id)
+
+            if not os.path.exists(audio_path):
+                os.makedirs(audio_path)
+
+            # Download the file to the process folder
+            audio_stream.download(output_path=audio_path,
+                                  filename=AUDIO_FILE_NAME)
+
+            # Return the file path as a response
+            return save_process(user_id, unique_id, audio_stream.title)
+    except Exception as e:
+        return JSONResponse(content={'error': str(e)}, status_code=500)
+
+def save_spotify_audio(user_id: str, track_url: str):
+    try:
+            # TODO: Download the Spotify Audio
+
+            # Generate a unique filename
+            unique_id = str(uuid.uuid4())
+
+            audio_path = os.path.join(
+                PROCESS_FOLDER, unique_id)
+
+            if not os.path.exists(audio_path):
+                os.makedirs(audio_path)
+
+            # Download the file to the process folder
+            audio_stream.download(output_path=audio_path,
+                                  filename=AUDIO_FILE_NAME)
+
+            # Return the file path as a response
+            return save_process(user_id, unique_id, audio_stream.title)
+    except Exception as e:
+        return JSONResponse(content={'error': str(e)}, status_code=500)
 
 def save_process(user_id: str, process_id: str, process_name: str):
     '''Save user process and return process ID'''
@@ -69,36 +115,14 @@ async def upload_file(file: UploadFile, user_id: str):
 async def download_audio(data: dict, user_id: str):
     print(data)
     '''Get audio URL'''
-    if 'video_id' not in data or 'format' not in data:
+    if 'content_id' not in data or 'format' not in data:
         return JSONResponse(content={'error': 'Invalid request'}, status_code=400)
 
-    video_id = data['video_id']
+    content_id = data['content_id']
     request_format = data['format']
 
     if (request_format == 'youtube'):
-        try:
-            # Download the YouTube video audio
-            youtube_url = f'https://www.youtube.com/watch?v={video_id}'
-            yt = YouTube(youtube_url)
-            audio_stream = yt.streams.filter(only_audio=True).first()
-            # Generate a unique filename
-            unique_id = str(uuid.uuid4())
-
-            audio_path = os.path.join(
-                PROCESS_FOLDER, unique_id)
-
-            if not os.path.exists(audio_path):
-                os.makedirs(audio_path)
-
-            # Download the file to the process folder
-            audio_stream.download(output_path=audio_path,
-                                  filename=AUDIO_FILE_NAME)
-
-            # Return the file path as a response
-            return save_process(user_id, unique_id, audio_stream.title)
-
-        except Exception as e:
-            return JSONResponse(content={'error': str(e)}, status_code=500)
+        save_youtube_audio(user_id, content_id)
 
 @app.get("/info/{user_id}")
 async def return_track_info(user_id: str):
