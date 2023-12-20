@@ -38,7 +38,7 @@ def allowed_file(filename):
     '''Check for allowed file type'''
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.post("/process-file/")
+@app.post("/process-file")
 async def upload_file(file: UploadFile, user_id: str):
     '''Receive files'''
     if not file:
@@ -65,7 +65,7 @@ async def upload_file(file: UploadFile, user_id: str):
     return JSONResponse(content={'error': 'Invalid file type'}, status_code=400)
 
 
-@app.post("/process-url/")
+@app.post("/process-url")
 async def download_audio(data: dict, user_id: str):
     print(data)
     '''Get audio URL'''
