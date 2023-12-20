@@ -1,2 +1,4 @@
 # Ignore uploaded files
 processes/*
+
+src/__pycache__/*
