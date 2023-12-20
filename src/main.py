@@ -100,6 +100,19 @@ async def download_audio(data: dict, user_id: str):
         except Exception as e:
             return JSONResponse(content={'error': str(e)}, status_code=500)
 
+@app.get("/info/{user_id}")
+async def return_track_info(user_id: str):
+    '''Track Identification'''
+    if user_id in user_files:
+        file_info = user_files[user_id]
+        file_path = file_info['process_id']
+
+        # TODO: add track identification
+
+
+        return JSONResponse(content={'text': 'YAY'})
+    else:
+        return JSONResponse(content={'error': 'User has no uploaded files'}, status_code=404)
 
 @app.get("/audio-file/{user_id}")
 async def return_user_file(user_id: str):
@@ -111,6 +124,7 @@ async def return_user_file(user_id: str):
     else:
         return JSONResponse(content={'error': 'User has no uploaded files'}, status_code=404)
 
+# TODO: Add more audio processing
 
 if __name__ == '__main__':
     if not os.path.exists(PROCESS_FOLDER):
