@@ -6,7 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from pytube import YouTube
 
 app = FastAPI()
-origins = ["https://beat-ml.vercel.app","http://localhost",]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
