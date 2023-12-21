@@ -14,10 +14,6 @@ from pytube import YouTube
 
 # MIDI conversion
 from basic_pitch.inference import predict_and_save
-from basic_pitch import ICASSP_2022_MODEL_PATH
-import tensorflow as tf
-
-basic_pitch_model = tf.saved_model.load(str(ICASSP_2022_MODEL_PATH))
 
 # Track splitter
 from spleeter.separator import Separator
