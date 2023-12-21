@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from starlette.middleware.cors import CORSMiddleware
 
 # Track identification
-import track_identifier
+# import track_identifier # Disabled due to deployment limitations
 
 # Online audio
 from pytube import YouTube
@@ -220,10 +220,10 @@ async def return_track_info(user_id: str):
             PROCESS_FOLDER, file_info["process_id"], AUDIO_FILE_NAME
         )
 
-        # TODO: add track identification
-        genre = await track_identifier.genre_predict(file_path)
+        # genre = await track_identifier.genre_predict(file_path)
+        genre = "see demo"
 
-        return JSONResponse(content={"text": genre})
+        return JSONResponse(content={"text": genre, "production": True})
     else:
         return JSONResponse(
             content={"error": "User has no uploaded files"}, status_code=404
