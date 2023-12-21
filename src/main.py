@@ -138,7 +138,7 @@ async def download_audio(data: dict, user_id: str):
     request_format = data["format"]
 
     if request_format == "youtube":
-        save_youtube_audio(user_id, content_id)
+        return save_youtube_audio(user_id, content_id)
 
 
 @app.get("/audio-file/{user_id}")
