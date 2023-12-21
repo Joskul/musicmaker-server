@@ -14,6 +14,10 @@ from pytube import YouTube
 
 # MIDI conversion
 from basic_pitch.inference import predict_and_save
+from basic_pitch import ICASSP_2022_MODEL_PATH
+import tensorflow as tf
+
+basic_pitch_model = tf.saved_model.load(str(ICASSP_2022_MODEL_PATH))
 
 # Track splitter
 from spleeter.separator import Separator
@@ -178,7 +182,7 @@ async def convert_audio_to_midi(user_id: str):
         return FileResponse(
             path=os.path.join(out_dir, MIDI_FILE_NAME),
             filename=MIDI_FILE_NAME,
-            media_type="application/octet-stream",
+            media_type="application/x-midi",
         )
     else:
         return JSONResponse(
@@ -189,7 +193,7 @@ async def convert_audio_to_midi(user_id: str):
 # TODO: Add more audio processing
 @app.get("/separate/{user_id}")
 async def separate_audio(user_id: str):
-    """Audio to MIDI"""
+    """Split Audio"""
     if user_id in user_files:
         file_info = user_files[user_id]
 
