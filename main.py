@@ -223,7 +223,7 @@ async def return_track_info(user_id: str):
         # TODO: add track identification
         genre = await track_identifier.genre_predict(file_path)
 
-        return JSONResponse(content={"text": genre})
+        return JSONResponse(content={"text": genre, "production": False})
     else:
         return JSONResponse(
             content={"error": "User has no uploaded files"}, status_code=404
