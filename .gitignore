@@ -1,5 +1,5 @@
 # Ignore uploaded files
 processes/*
-pretrained_models/*
+pretrained_models/4stems/*
 
 src/__pycache__/*
