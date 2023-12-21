@@ -202,7 +202,7 @@ async def separate_audio(user_id: str):
 
         separator.separate_to_file(file_in, out_dir)
         shutil.make_archive("splitted_audio", "zip", os.path.join(out_dir, "audio"))
-        shutil.move("splitted_audio.zip", out_dir)
+        shutil.move("splitted_audio.zip", os.path.join(out_dir, "splitted_audio.zip"))
 
         return FileResponse(
             path=os.path.join(out_dir, "splitted_audio.zip"),
