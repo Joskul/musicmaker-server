@@ -233,6 +233,3 @@ async def return_track_info(user_id: str):
 if __name__ == "__main__":
     if not os.path.exists(PROCESS_FOLDER):
         os.makedirs(PROCESS_FOLDER)
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, log_level="info", reload=True)
