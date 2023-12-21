@@ -3,6 +3,10 @@ import uuid
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from starlette.middleware.cors import CORSMiddleware
+from spleeter.separator import Separator
+import shutil
+import os
+from basic_pitch.inference import predict_and_save
 
 from pytube import YouTube
 
@@ -11,8 +15,11 @@ import librosa
 
 from sound_to_midi.monophonic import wave_to_midi
 
+# initial and config
 app = FastAPI()
+separator = Separator('spleeter:2stems')
 origins = ["*"]
+ALLOWED_AUDIO_EXTENSIONS = {'.mp3', '.wav', '.ogg'}
 
 app.add_middleware(
     CORSMiddleware,
@@ -173,6 +180,53 @@ async def convert_audio_to_midi(user_id: str):
         return JSONResponse(content={'error': 'User has no uploaded files'}, status_code=404)
 
 # TODO: Add more audio processing
+@app.post("/separate")
+async def separate_audio(audio_file: UploadFile = File(...)):
+    if not audio_file.filename.lower().endswith(tuple(ALLOWED_AUDIO_EXTENSIONS)):
+        raise HTTPException(status_code=400, detail="Only audio files with extensions .mp3, .wav, or .ogg are supported")
+
+    file_path = f"./uploads/{audio_file.filename}"
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(audio_file.file, f)
+
+    output_path = './output/track_split/'
+    os.makedirs(output_path, exist_ok=True)
+    separator.separate_to_file(file_path, output_path)
+
+    return {
+        'vocals_path': f'{output_path}audio_example/vocals.wav',
+        'accompaniment_path': f'{output_path}audio_example/accompaniment.wav'
+    }
+
+@app.post("/audio2midi")
+async def audio_to_midi(audio_file: UploadFile = File(...)):
+    if not audio_file.filename.lower().endswith(tuple(ALLOWED_AUDIO_EXTENSIONS)):
+        raise HTTPException(status_code=400, detail="Only audio files with extensions .mp3, .wav, or .ogg are supported")
+
+    file_path = f"./temp/{audio_file.filename}"
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(audio_file.file, f)
+
+    
+    output_path = './output/audio2midi/'
+    os.makedirs(output_path, exist_ok=True)
+    predict_and_save(
+        [file_path],
+        output_path,
+        save_midi=True,
+        sonify_midi=False,
+        save_model_outputs=False,
+        save_notes=False,
+    )
+
+    return {
+        'midi_path': f'{output_path}/{os.path.splitext(os.path.basename(file_path))[0]}_basic_pitch.mid',
+    }
+
+@app.post("/genre_predict")
+async def genre_predict():
+    return {}
+
 
 if __name__ == '__main__':
     if not os.path.exists(PROCESS_FOLDER):
